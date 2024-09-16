@@ -4,7 +4,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
 }
 
-function Button({ label, className, onClick }: ButtonProps) {
+const Button = ({ label, className, onClick }: ButtonProps) => {
   return (
     <button
       className={`bg-accent text-secondary p-2 rounded-md ${className} hover:bg-opacity-90`}
@@ -13,6 +13,6 @@ function Button({ label, className, onClick }: ButtonProps) {
       {label}
     </button>
   );
-}
+};
 
 export default Button;

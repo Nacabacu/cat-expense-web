@@ -8,8 +8,9 @@ module.exports = {
         secondary: '#f3f4f6',
         accent: '#eab308',
         accentLight: '#fef9c3',
+        error: '#dc2626',
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/forms')],
 };

@@ -2,6 +2,7 @@ import { MouseEvent, useState } from 'react';
 import Button from '../components/Button';
 import { Expense, useExpenseContext } from '../context/expense';
 import Table, { Column, ColumnType } from '../components/Table';
+import AddDialog from '../components/AddDialog';
 
 const columns: Column<Expense>[] = [
   {
@@ -28,22 +29,29 @@ const columns: Column<Expense>[] = [
   },
 ];
 
-function Main() {
-  const [i, setI] = useState(0);
-  const { expenseList, addExpense, deleteExpense } = useExpenseContext();
+const Main = () => {
+  const { expenseList, addExpense, deleteExpenseByIds } = useExpenseContext();
   const [selectedExpenseList, setSelectedExpenseList] = useState<Expense[]>([]);
+  const [isDialogShown, setIsDialogShown] = useState(false);
+
+  const showDialog = () => {
+    setIsDialogShown(true);
+  };
+
+  const onDialogSubmit = (expense: Expense) => {
+    addExpense(expense);
+  };
+
+  const onDialogClose = () => {
+    setIsDialogShown(false);
+  };
 
   const onAddExpense = (event: MouseEvent) => {
-    setI(i => (i += 1));
-    addExpense({
-      itemName: i.toString(),
-      category: 'Accessory',
-      amount: 123,
-    });
+    showDialog();
   };
 
   const onDeleteExpense = () => {
-    deleteExpense(selectedExpenseList);
+    deleteExpenseByIds(selectedExpenseList.map(e => e.id));
     setSelectedExpenseList([]);
   };
 
@@ -62,8 +70,14 @@ function Main() {
           setSelectedExpenseList(selectedItem);
         }}
       />
+      {isDialogShown && (
+        <AddDialog
+          onSubmitDialog={onDialogSubmit}
+          onClose={onDialogClose}
+        ></AddDialog>
+      )}
     </div>
   );
-}
+};
 
 export default Main;

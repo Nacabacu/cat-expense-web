@@ -6,14 +6,26 @@ export enum ColumnType {
   Checkbox = 'checkbox',
 }
 
-export interface Column<T> {
-  key?: keyof T;
-  type: ColumnType;
+export type Column<T> = CheckboxColumn | ValueColumn<T>;
+
+interface ColumnBase {
   label: string;
   formatter?: (value: any) => string;
 }
 
-interface TableProps<T extends Record<string, any>>
+interface ValueColumn<T> extends ColumnBase {
+  key: keyof T;
+  type: ColumnType.Value;
+}
+
+interface CheckboxColumn extends ColumnBase {
+  type: ColumnType.Checkbox;
+}
+
+interface DataType extends Record<string, any> {
+  id: string;
+}
+interface TableProps<T extends DataType>
   extends TableHTMLAttributes<HTMLTableElement> {
   data: T[];
   columns: Column<T>[];
@@ -23,28 +35,25 @@ interface TableProps<T extends Record<string, any>>
 
 const tableCellClassName = 'whitespace-nowrap px-4 py-2';
 
-function Table<T extends Record<string, any>>({
+const Table = <T extends DataType>({
   data,
   columns,
   highlightKey,
   onSelectionChange,
-}: TableProps<T>) {
+}: TableProps<T>) => {
   const [selectedItems, setSelectedItems] = useState<T[]>([]);
-  const [maxValue, setMaxValue] = useState<number | null>(null);
 
   useEffect(() => {
     onSelectionChange(selectedItems);
   }, [selectedItems, onSelectionChange]);
 
-  useMemo(() => {
-    setMaxValue(
-      Math.max(
-        ...data.map(item => {
-          return item[highlightKey];
-        })
-      )
+  const maxValue = useMemo(() => {
+    return Math.max(
+      ...data.map(item => {
+        return item[highlightKey];
+      })
     );
-  }, [data]);
+  }, [data, highlightKey]);
 
   const handleCheckboxChange = (item: T, isChecked: boolean) => {
     if (isChecked) {
@@ -79,19 +88,19 @@ function Table<T extends Record<string, any>>({
         <thead className="bg-accent">
           <tr>
             {columns.map((column, i) => (
-              <th key={i} className={tableCellClassName}>
+              <th key={column.label + i} className={tableCellClassName}>
                 {column.label}
               </th>
             ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {data.map((item, index) => (
-            <tr key={index}>
+          {data.map(item => (
+            <tr key={item.id}>
               {columns.map((column, i) => (
                 <td
                   key={i}
-                  className={`${tableCellClassName} ${clsx({ 'bg-accentLight !text-primary': item[highlightKey] === maxValue })}`}
+                  className={`${tableCellClassName} ${clsx({ 'bg-accentLight !text-primary': item[highlightKey] === maxValue, 'flex justify-center': column.type === ColumnType.Checkbox })}`}
                 >
                   {renderCellValue(item, column)}
                 </td>
@@ -102,6 +111,6 @@ function Table<T extends Record<string, any>>({
       </table>
     </div>
   );
-}
+};
 
 export default Table;
