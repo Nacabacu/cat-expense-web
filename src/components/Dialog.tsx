@@ -12,7 +12,7 @@ const schema = z.object({
     .string()
     .trim()
     .min(1, 'Item name is required')
-    .max(20, 'Maximum 20 characters'),
+    .max(30, 'Maximum 30 characters'),
   category: z.string().min(1, 'Please Select'),
   amount: z
     .number({ invalid_type_error: 'Amount is required' })
@@ -21,12 +21,19 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-interface AddDialogProps extends DialogHTMLAttributes<HTMLDialogElement> {
-  onSubmitDialog: (expense: Expense) => void;
+interface DialogProps extends DialogHTMLAttributes<HTMLDialogElement> {
+  onAddItem: (expense: Expense) => void;
+  onUpdateItem: (expense: Expense) => void;
   onClose: () => void;
+  initialData?: Expense;
 }
 
-const AddDialog = ({ onSubmitDialog, onClose }: AddDialogProps) => {
+const Dialog = ({
+  onAddItem,
+  onUpdateItem,
+  onClose,
+  initialData,
+}: DialogProps) => {
   const [catFact, setCatFact] = useState('loading...');
   const dialogRef = useRef<HTMLDialogElement>(null);
   const {
@@ -68,12 +75,23 @@ const AddDialog = ({ onSubmitDialog, onClose }: AddDialogProps) => {
 
   const onSubmitHandler: SubmitHandler<FormValues> = data => {
     if (!isValid) return;
-    onSubmitDialog({
-      id: generateId(),
-      itemName: data.itemName,
-      category: data.category as Category,
-      amount: data.amount,
-    });
+
+    if (initialData) {
+      onUpdateItem({
+        id: initialData.id,
+        itemName: data.itemName,
+        category: data.category as Category,
+        amount: data.amount,
+      });
+    } else {
+      onAddItem({
+        id: generateId(),
+        itemName: data.itemName,
+        category: data.category as Category,
+        amount: data.amount,
+      });
+    }
+
     dialogRef.current?.close();
   };
 
@@ -99,6 +117,7 @@ const AddDialog = ({ onSubmitDialog, onClose }: AddDialogProps) => {
                 error={errors.itemName}
                 {...register('itemName')}
                 className="w-48"
+                defaultValue={initialData?.itemName}
               />
             </div>
             <div className="flex justify-between items-center">
@@ -107,6 +126,7 @@ const AddDialog = ({ onSubmitDialog, onClose }: AddDialogProps) => {
                 <select
                   {...register('category')}
                   className="border-gray-300 h-10 border rounded-sm w-48"
+                  defaultValue={initialData?.category}
                 >
                   <option value="">Select category</option>
                   {categories.map(category => (
@@ -131,6 +151,7 @@ const AddDialog = ({ onSubmitDialog, onClose }: AddDialogProps) => {
                 error={errors.amount}
                 {...register('amount', { valueAsNumber: true })}
                 className="w-48 [&::-webkit-inner-spin-button]:appearance-none"
+                defaultValue={initialData?.amount}
               />
             </div>
             <Button label="Submit" className="w-20 self-end" />
@@ -144,4 +165,4 @@ const AddDialog = ({ onSubmitDialog, onClose }: AddDialogProps) => {
     </dialog>
   );
 };
-export default AddDialog;
+export default Dialog;

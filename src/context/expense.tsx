@@ -19,6 +19,7 @@ export interface ExpenseContext {
   expenseList: Expense[];
   addExpense: (expense: Expense) => void;
   deleteExpenseByIds: (ids: string[]) => void;
+  updateExpenseById: (id: string, newExpense: Expense) => void;
 }
 
 interface ExpenseContextProviderProps {
@@ -70,9 +71,15 @@ export const ExpenseContextProvider = ({
     );
   };
 
+  const updateExpenseById = (id: string, newExpense: Expense) => {
+    setExpenseList(currentList =>
+      currentList.map(expense => (expense.id === id ? newExpense : expense))
+    );
+  };
+
   return (
     <ExpenseContext.Provider
-      value={{ expenseList, addExpense, deleteExpenseByIds }}
+      value={{ expenseList, addExpense, deleteExpenseByIds, updateExpenseById }}
     >
       {children}
     </ExpenseContext.Provider>
