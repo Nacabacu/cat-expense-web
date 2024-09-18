@@ -57,11 +57,14 @@ const Table = <T extends DataType>({
   }, [selectedItems, onSelectionChange]);
 
   useEffect(() => {
-    if (data.length === 0) {
-      setIsCheckedAll(false);
-    }
     setSelectedItems(prev => {
-      return prev.filter(i => data.includes(i));
+      const newSelectedItems = prev.filter(item => data.includes(item));
+
+      setIsCheckedAll(
+        data.length > 0 && data.every(item => newSelectedItems.includes(item))
+      );
+
+      return newSelectedItems;
     });
   }, [data]);
 
